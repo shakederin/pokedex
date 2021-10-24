@@ -15,24 +15,36 @@ function buildFileForUser(userName){
     });
   }
   
-  // 4 i
-  router.get('/pokemon/get/:id', async function(req, res, next) {
+// 4 i
+router.get('/pokemon/get/:id', async function(req, res, next) {
     try {
       const userName = req.headers.username;
       if(!userName){
         next(401);
     }
       buildFileForUser(userName)
-      const pokimonData = await P.getPokemonByName(req.params.id); 
-      res.send(pokimonData);
+      const pokimonData = await P.getPokemonByName(req.params.id);
+      const pokimonTypes = [];
+      for( let type in pokimonData.types){
+        pokimonTypes.push(pokimonData.types[type].type.name)
+      } 
+      res.send(JSON.stringify({
+        name: pokimonData.name,
+        height: pokimonData.height,
+        weight: pokimonData.weight,
+        types: pokimonTypes,
+        front_pic: pokimonData.sprites.front_default,
+        back_pic: pokimonData.sprites.back_default,
+        abilities: pokimonData.abilities,
+     }));
     } catch (error){
         console.log(error.message);
         next(404);
     }
-  });
+});
   
-  //4 ii+iii
-  router.get('/pokemon/query', async function(req, res, next) {
+//4 ii+iii
+router.get('/pokemon/query', async function(req, res, next) {
     try {
       const userName = req.headers.username;
       if(!userName){
@@ -58,10 +70,10 @@ function buildFileForUser(userName){
       console.log(error);
       next(404);
     }
-  });
+});
   
-  //4 iii
-  router.put("/pokemon/catch/:id", async function(req, res, next){
+//4 iii
+router.put("/pokemon/catch/:id", async function(req, res, next){
     try{
       const userName = req.headers.username;
       if(!userName){
@@ -79,10 +91,10 @@ function buildFileForUser(userName){
     })} catch (error){
       next(500)
     }
-  });
+});
   
-  //4 iv
-  router.delete("/pokemon/release/:id", async function(req, res, next){
+//4 iv
+router.delete("/pokemon/release/:id", async function(req, res, next){
     try {
         const userName = req.headers.username;
         if(!userName){
@@ -102,25 +114,31 @@ function buildFileForUser(userName){
       next(500);
     }
   
-    })
+})
   
-  // 4 v
-  router.get('/pokemon/', async function(req, res, next) {  
+// 4 v
+router.get('/pokemon/', async function(req, res, next) {  
     try {
-      const userName = req.headers.username;
-      if(!userName){
-        next(401);
-    }
-      fs.readdir(`../users/${userName}`, (err, files)=>{
-        const pokemonArray = [];
-        for(let file of files){
-          pokemonArray.push(file.slice(0, file.length-5))
+        const userName = req.headers.username;
+        if(!userName){
+            next(401);
         }
-        res.send(pokemonArray);
-      })
+        fs.access(`./users/${userName}/`, (err)=>{
+            if(err){
+                return
+            }else{
+                fs.readdir(`C:/Users/owner/Desktop/קורס CYBER4S/29.08/pokedex/pokemon-api/scr/users/${userName}`, (err, files)=>{
+                    const pokemonArray = [];
+                    for(let file of files){
+                    pokemonArray.push(file.slice(0, file.length-5))
+                    }
+                    res.send(pokemonArray);
+                })
+            }
+        })    
     } catch (error){
       next(500);
     }
-  });
+});
 
-  module.exports = router;
+module.exports = router;
